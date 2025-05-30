@@ -1,0 +1,744 @@
+{
+  "name": "LinkedIn Post Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $('Get Data from Sheets').item.json.Image }}",
+        "options": {}
+      },
+      "id": "9389dd3b-6fa8-4a0c-952e-f1c662593d89",
+      "name": "Get Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1300,
+        -20
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "14NzUnCBKKLF6sjperR9oQ-UBD4RnJHcjMo0_Mdy0boo",
+          "mode": "list",
+          "cachedResultName": "linkedin-post-ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14NzUnCBKKLF6sjperR9oQ-UBD4RnJHcjMo0_Mdy0boo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 508852550,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14NzUnCBKKLF6sjperR9oQ-UBD4RnJHcjMo0_Mdy0boo/edit#gid=508852550"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6fb3d7ff-a49e-4cb7-ba8d-778b6432bd7c",
+      "name": "Get Data from Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        100,
+        400
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "p2oKplRjnS4sAqLj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert LinkedIn content writer who creates natural, humanized, and high-performing posts.\n\nUse the following data to write a professional LinkedIn post. Keep the structure clear and readable — like real people write. Don’t sound robotic.\n\n# Goal:\n- Engage the reader with a relatable, bold hook.\n- Write with flow, without excessive punctuation or clutter.\n- Use short paragraphs for readability.\n- If the topic allows, include numbered or dash-style bullets (never asterisks).\n- End with a thought-provoking question, vote-style call to action, or invite conversation.\n- Add 2–3 relevant lowercase hashtags (no special formatting like `#AI` or `#StartUpTips` — just `#ai`, `#startups`).\n\n# Format:\n- Start with a bold hook (with or without emoji).\n- Write 200–600 words (up to 2500 characters) of professional yet approachable content.\n- Use bullets or lists only if it makes the post clearer.\n- Absolutely no markdown, **bold**, **italic**, or asterisk-based formatting.\n- Emojis should be minimal, relevant, and used naturally.\n\n# Input:\n\n## Post Description:\n{{ $json[\"Post Description\"] }}\n\n## Instructions:\n{{ $json[\"Instructions\"] }}\n\n# Rules:\n- Follow the description and instructions exactly.\n- Output only the post text (no titles, labels, or extra comments).\n- If instructions say “keep the same post,” return the Post Description exactly as the final post.\n",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an expert social media and LinkedIn content writer.\n\nYou will be provided with:\n- A brief post description\n- Specific instructions from the user\n\nPlease follow these steps:\n\n1. Initial Creation:\nIf you are given a post description and instructions, write a polished, professionally worded LinkedIn post suitable for sharing. Strictly follow the instructions and ensure the message is engaging and succinct.\nIf instructed, add a call to action or particular phrase (for example, \"Connect with me\" at the bottom).\n\n2. Formatting:\nKeep the tone positive, inclusive, and professional.\nAdd relevant hashtags in small case.\nLimit the content to within 1300 characters.\nPlace the call to action or special instruction at the end if requested.\nOutput ONLY the final LinkedIn post content. Do NOT include any explanations, markdown, headings, or commentary—just the post text, ready to copy and share on LinkedIn."
+            }
+          ]
+        }
+      },
+      "id": "4c1bad10-d8a2-4726-ba6d-66d45eb61d56",
+      "name": "Generate Post Content",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        260,
+        400
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bded6f56-99e2-4f1a-be41-27a8dd417844",
+              "name": "Post Content",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "id": "c222c42e-b639-4a74-a1b0-7a3e6e141d55",
+              "name": "Post Description",
+              "type": "string",
+              "value": "={{ $('Get Data from Sheets').item.json['Linked'] }}\n"
+            },
+            {
+              "id": "14775ff7-e005-4a86-9623-c322365f7d3a",
+              "name": "Instructions",
+              "type": "string",
+              "value": "={{ $('Get Data from Sheets').item.json.Instructions }}"
+            },
+            {
+              "id": "da3c1b8c-0a92-4826-a2d5-56fd14d76f2e",
+              "name": "row_number",
+              "value": "={{ parseInt($json[\"row_number\"], 10) }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8a6b9adc-ba46-4111-b96b-0e321ee0b2ba",
+      "name": "Data Formatting 1",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        580,
+        400
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "sohailaslam7888@gmail.com",
+        "subject": "Approval for LinkedIn Post",
+        "message": "=Generated Post:\n{{ $json['Post Content'] }}\n\n----------\n\nPost Description:\n{{ $json['Post Description'] }}\n\n----------\n\nInstructions:\n{{ $json.Instructions }}",
+        "responseType": "customForm",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Confirm  Content?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes"
+                  },
+                  {
+                    "option": "No"
+                  },
+                  {
+                    "option": "Cancel"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Any Changes?",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cfb1bd27-c367-467e-b5f6-1dbb012a5ba2",
+      "name": "Send Content Confirmation",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        780,
+        400
+      ],
+      "webhookId": "29614d41-05c1-44af-93a6-4831a27f9331",
+      "typeVersion": 2.1,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "25x4VfqTKJqdX6VO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "99ec185e-80ac-451d-bb69-662f84a7cf52",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.data['Confirm  Content?'] }}",
+                    "rightValue": "Yes"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Yes"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "77031007-a912-4b9b-9cca-846c57ffaec8",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.data['Confirm  Content?'] }}",
+                    "rightValue": "No"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "No"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "e94de530-6451-48aa-892c-924a9c41cfb0",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.data['Confirm  Content?'] }}",
+                    "rightValue": "Cancel"
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Cancel"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a95ff85f-1b23-4689-ada3-61d4b8426af3",
+      "name": "Content Confirmation Logic",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        980,
+        400
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Apply the modification requests on the following LinkedIn post. Besides applying the reqested modifications, return the same linkedin post.\n\nLinkedIn post:\n```\n{{ $('Data Formatting 1').item.json['Post Content'] }}\n```\n\nChange requests:\n{{ $('Send Content Confirmation').item.json.data['Any Changes?'] }}\n\n**Task:**\nUsing the information above, update the LinkedIn post content:\n- Do not include any explanations, just the final post content only (with all the change requests included in the post), ready to publish on LinkedIn.\n- Limit to 1300 characters.\n- If the user demands to keep the same post as the Post Description (in the instructions), then keep the same post content as provided in the Post Description, and output it."
+      },
+      "id": "e33fc3ea-2fea-4533-99f6-b63be579fce7",
+      "name": "Regenerate Post Content",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        1140,
+        520
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "9a78220d-35f5-48b6-9ce3-faecaac24b74",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "leftValue": "={{ $('Get Data from Sheets').item.json.Image }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fefaa2c0-f24e-434c-ba9f-587b5976cb8a",
+      "name": "If Image Provided",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1180,
+        220
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "postAs": "organization",
+        "organization": "107590728",
+        "text": "={{ $('Data Formatting 1').item.json['Post Content'] }}",
+        "shareMediaCategory": "IMAGE",
+        "additionalFields": {}
+      },
+      "id": "59f3824d-80ab-4337-b4ab-7e325488027f",
+      "name": "Post With Image",
+      "type": "n8n-nodes-base.linkedIn",
+      "position": [
+        1460,
+        -20
+      ],
+      "typeVersion": 1,
+      "notesInFlow": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "person": "pM247vR8Se",
+        "text": "={{ $('Data Formatting 1').item.json['Post Content'] }}",
+        "additionalFields": {}
+      },
+      "id": "1cbd22fb-f075-4d37-ae79-1ed5ad9a6871",
+      "name": "Post Without Image",
+      "type": "n8n-nodes-base.linkedIn",
+      "position": [
+        1360,
+        240
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "14NzUnCBKKLF6sjperR9oQ-UBD4RnJHcjMo0_Mdy0boo",
+          "mode": "list",
+          "cachedResultName": "linkedin-post-ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14NzUnCBKKLF6sjperR9oQ-UBD4RnJHcjMo0_Mdy0boo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 508852550,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14NzUnCBKKLF6sjperR9oQ-UBD4RnJHcjMo0_Mdy0boo/edit#gid=508852550"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Pendinng"
+          },
+          "matchingColumns": [
+            "Status"
+          ],
+          "schema": [
+            {
+              "id": "Linked",
+              "displayName": "Linked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Instructions",
+              "displayName": "Instructions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "771c8989-fef8-4941-87a6-8d0beafa8ae2",
+      "name": "Update Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        1560,
+        400
+      ],
+      "typeVersion": 4.5,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "p2oKplRjnS4sAqLj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 1. Schedule & Sheet Data Retrieval\n\nThis workflow starts manually.\n\nIt retrieves the next Google Sheet row marked as ‘Pending’.\n\nThe sheet should include columns like:\n1. Post Description\n2. Instructions\n3. Image\n4. Status\n5. row_number (required for updates)\n\n",
+        "height": 380,
+        "width": 420
+      },
+      "id": "05a15cdf-67a0-49e5-a470-4cfaf6f27070",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -380,
+        340
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 2. AI-Powered Post Generation & Formatting\n\nUses Gemini to generate a LinkedIn post based on the sheet’s Post Description and Instructions.\n\nWe can modify the prompt if needed.\nThe generated post is then formatted along with relevant data for easy reference and consistency.",
+        "height": 240,
+        "width": 420
+      },
+      "id": "25866218-ca34-4a9d-afb5-368dd7a295f1",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        20,
+        740
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 3. Gmail Approval Workflow\n\nSends the formatted post to an approver via Gmail.\n\nThe approver can respond with:\n✅ Yes – Approve\n✏️ No – Request changes\n❌ Cancel – Abort the post\n\n",
+        "height": 240,
+        "width": 440
+      },
+      "id": "2623c026-0e16-4062-beb1-843bf6776efe",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        480,
+        740
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 4. Approval Handling & Regeneration\n\nHandles all approval responses:\n- If Yes, proceed to post.\n- If No, regenerate content based on the feedback and resend.\n- If Cancel, update the Google Sheet as Cancelled.\n\nThis ensures a complete review cycle before posting.",
+        "height": 240,
+        "width": 440
+      },
+      "id": "307deade-c96e-4e4d-b78f-927b92a4f7c5",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        980,
+        740
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 5. Image Check, Posting & Sheet Update\n\nChecks if an image URL is provided.\n- If present: Downloads the image and posts with it.\n- If not: Posts content without an image.\n\nAfter posting, it updates the Google Sheet with:\n- Status = Completed or Cancelled\n- LinkedIn post link/output\n\nUses row_number for precise sheet updates.",
+        "height": 300,
+        "width": 420
+      },
+      "id": "5e0db719-7b07-4b4f-a529-56fd915163c5",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        740,
+        40
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        580,
+        140
+      ],
+      "id": "3f5582e8-16f3-4431-aa14-23c117cbf5a2",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        280,
+        600
+      ],
+      "id": "dd4bfcd2-52a8-4aee-861a-fc06aaf94beb",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "4bBJhYaUzNtfoy1O",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 🚀 LinkedIn Post-Agent\nReads pending content from Google Sheets → Generates AI posts → Publishes on LinkedIn → Auto-updates status to keep things moving.\n⚡ One-click, zero-repeat, fully automated.\n",
+        "width": 700
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -160,
+        120
+      ],
+      "typeVersion": 1,
+      "id": "2dc429da-3fb4-4035-a104-fc379698474e",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get Image": {
+      "main": [
+        [
+          {
+            "node": "Post With Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Data from Sheets": {
+      "main": [
+        [
+          {
+            "node": "Generate Post Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Post Content": {
+      "main": [
+        [
+          {
+            "node": "Data Formatting 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Formatting 1": {
+      "main": [
+        [
+          {
+            "node": "Send Content Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Content Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Content Confirmation Logic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content Confirmation Logic": {
+      "main": [
+        [
+          {
+            "node": "If Image Provided",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Regenerate Post Content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Regenerate Post Content": {
+      "main": [
+        [
+          {
+            "node": "Data Formatting 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Image Provided": {
+      "main": [
+        [
+          {
+            "node": "Get Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Post Without Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post With Image": {
+      "main": [
+        [
+          {
+            "node": "Update Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Without Image": {
+      "main": [
+        [
+          {
+            "node": "Update Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Data from Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Post Content",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Regenerate Post Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "cf0481a8-14fb-4476-94be-3932f0d9c475",
+  "meta": {
+    "instanceId": "3a23aa92be13c2c0df61a128c98c3a3deb69832d7ce87754b6965ea0abe627bf"
+  },
+  "id": "kQoNSN6XmAg1j3qh",
+  "tags": []
+}
